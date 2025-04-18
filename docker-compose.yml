@@ -1,0 +1,60 @@
+services:
+  web:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - REDIS_URL=redis://:12345@redis:6379/0
+      - DATABASE_URL=postgresql+asyncpg://postgres:12345@postgres:5432/notification_service_db
+    volumes:
+      - .:/app
+  celery:
+    build: .
+    command: celery -A app.celery_app worker --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://:12345@redis:6379/0
+      - DATABASE_URL=postgresql+asyncpg://postgres:12345@postgres:5432/notification_service_db
+    volumes:
+      - .:/app
+  redis:
+    image: redis:latest
+    command: redis-server --requirepass 12345
+    ports:
+      - "6379:6379"
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: notification_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "12345"
+    ports:
+      - "5432:5432"
+  celery-exporter:
+    image: ovalmoney/celery-exporter:latest
+    environment:
+      - CELERY_BROKER_URL=redis://:12345@redis:6379/0
+      - LISTEN_ADDRESS=0.0.0.0:8888
+    ports:
+      - "8888:8888"
+    depends_on:
+      - redis
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus

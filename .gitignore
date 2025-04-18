@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+ENV/
+
+# IDE
+.idea/
+
+
+# Logs
+*.log
+*.log~
+
+# Environment files
+.env
+
+# Database
+*.sqlite3
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated files
+all.py
+analyze_project.py
+output.txt
+project_analysis.txt
+tbd.py
+tr.py
+tc.py
